@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Async Shell Tutorial for PHP</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <p style="text-align: center"><button type="button" onclick="run()">Click here to start</button></p>
+        <div id="output" style="font-family: monospace; width: 50%; border: 1px solid black; margin: 0px auto; height: 400px; overflow: auto"></div>
+        <p style="width: 50%; margin: 0px auto"><b>Script status:</b><span id="script"></span></p>
+        <script type="text/javascript">
+
+            var lastRequest = false;
+            var listenInterval = 800;
+
+            function run() {
+                lastRequest = false;
+                var xobj = new XMLHttpRequest();
+                xobj.open('GET', 'run.php', true);
+                xobj.onreadystatechange = function () {
+                    document.getElementById('script').innerHTML = 'Finished';
+                };
+                document.getElementById('script').innerHTML = 'Running';
+                xobj.send(null);
+                listen();
+            }
+
+            function listen() {
+                var xobj = new XMLHttpRequest();
+                xobj.open('GET', 'listen.php', true);
+                xobj.onreadystatechange = function () {
+                    if (xobj.readyState == 4 && xobj.status == "200") {
+                        if (!lastRequest) {
+                            setTimeout(listen, listenInterval);
+                        }
+                        var output = document.getElementById('output');
+                        output.innerHTML = xobj.responseText;
+                        output.scrollTop = output.scrollHeight
+                        lastRequest = isFinished();
+                    }
+                };
+                xobj.send(null);
+            }
+
+            function isFinished() {
+                return document.getElementById('script').innerHTML === 'Finished';
+            }
+        </script>
+    </body>
+</html>
